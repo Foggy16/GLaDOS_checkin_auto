@@ -66,6 +66,16 @@ class GladosCheckinTests(unittest.TestCase):
         self.assertIn("workflow_dispatch:", workflow)
         self.assertIn("schedule:", workflow)
 
+    def test_workflow_uses_node24_compatible_official_actions(self):
+        workflow = Path(".github/workflows/runGladosAction.yml").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("uses: actions/checkout@v5", workflow)
+        self.assertIn("uses: actions/setup-python@v6", workflow)
+        self.assertNotIn("uses: actions/checkout@v4", workflow)
+        self.assertNotIn("uses: actions/setup-python@v5", workflow)
+
 
 if __name__ == "__main__":
     unittest.main()
