@@ -1,31 +1,33 @@
-name: 开始每日签到
+name: GLaDOS Daily Check-in
 
 on:
   workflow_dispatch:
   schedule:
-    # UTC 1点30分(北京时间 9点30分)
-    - cron: 30 1 * * *
-  # 标星时触发工作流程
-  watch:
-    types: [started]
+    # 01:30 UTC = 09:30 Asia/Shanghai
+    - cron: "30 1 * * *"
+
+permissions:
+  contents: read
 
 jobs:
-  build:
+  checkin:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v3
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.9
-      - name: Install requirements
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests
-      - name: Run checkin
-        run: |
-          python3 glados.py
-        env: 
-          GLADOS_COOKIE: "$koa:sess=eyJ1c2VySWQiOjI3MjIwMCwiX2V4cGlyZSI6MTgwMTY3Mjc5OTg4MiwiX21heEFnZSI6MjU5MjAwMDAwMDB9; koa:sess.sig=xOovLivs-YKMacX_Z6mlxHtCQj0"
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Run GLaDOS check-in
+        env:
+          GLADOS_COOKIE: ${{ secrets.GLADOS_COOKIE }}
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
-      - uses: gautamkrishnar/keepalive-workflow@master  
+        run: python glados.py
